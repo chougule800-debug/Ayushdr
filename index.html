@@ -2498,7 +2498,7 @@
             <button class="lightbox-close" style="position:sticky;top:0;float:right;color:var(--gray);font-size:32px;background:none;border:none;cursor:pointer;line-height:1;" onclick="closeRegistration()">&times;</button>
             
             <!-- Modal Header -->
-            <div style="text-align:center;margin-bottom:24px;">
+            <div id="regModalHeader" style="text-align:center;margin-bottom:24px;">
                 <div class="reg-modal-logo">
                     <img src="AFI_Logo.png" alt="AFI Logo" onerror="handleLogoFallback(this)">
                 </div>
@@ -2509,7 +2509,7 @@
             </div>
 
             <!-- Payment Details Card -->
-            <div style="background:linear-gradient(135deg, var(--primary), var(--primary-dark));color:white;padding:18px 22px;border-radius:12px;margin-bottom:24px;border:1px solid rgba(212,175,55,0.4);box-shadow:0 4px 15px rgba(0,34,68,0.15);">
+            <div id="regModalPayment" style="background:linear-gradient(135deg, var(--primary), var(--primary-dark));color:white;padding:18px 22px;border-radius:12px;margin-bottom:24px;border:1px solid rgba(212,175,55,0.4);box-shadow:0 4px 15px rgba(0,34,68,0.15);">
                 <h4 style="color:var(--secondary);text-align:center;font-size:16px;font-weight:700;letter-spacing:0.5px;margin-bottom:12px;"><i class="fas fa-credit-card"></i> PAYMENT &amp; BANK DETAILS</h4>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;font-size:15px;">
                     <div><span style="opacity:0.85;">A/c Name:</span> <strong style="color:#fff;">Ayush Federation of India</strong></div>
@@ -4244,26 +4244,22 @@ function doGet(e) {
                     saveRegistrationToGoogleSheet(newMember);
                 }
 
-                resp.textContent = gsheetConfig.enabled ? 
-                    '✓ Registration submitted successfully! Saved in Google Sheets & Active in Directory.' : 
-                    '✓ Registration successful! Welcome to AFI.';
-                resp.style.color = 'var(--success)';
                 this.reset();
                 document.getElementById('regPhotoPreview').innerHTML = '';
                 selectedFile = null;
                 toast('Registration successful! Welcome to AFI.', 'success');
 
-                // Immediate directory update so the doctor shows in the list
-                setTimeout(() => {
-                    closeRegistration();
-                    renderHome();
-                    renderPublicMembers();
-                    if (isAdmin) {
-                        renderAdminDashboard();
-                        renderAdminMembers();
-                        renderAdminSheets();
-                    }
-                }, 1200);
+                // Update directory in background
+                renderHome();
+                renderPublicMembers();
+                if (isAdmin) {
+                    renderAdminDashboard();
+                    renderAdminMembers();
+                    renderAdminSheets();
+                }
+
+                // Show member their submitted details inside the modal
+                showRegistrationSuccessCard(newMember);
             } catch (e) {
                 resp.textContent = '✗ ' + e.message;
                 resp.style.color = 'var(--danger)';
@@ -4283,6 +4279,121 @@ function doGet(e) {
 
         function closeRegistration() {
             document.getElementById('registrationModal').classList.remove('active');
+            // Remove success card if present so form shows fresh next time
+            const successCard = document.getElementById('regSuccessCard');
+            if (successCard) successCard.remove();
+            const regForm = document.getElementById('publicRegistrationForm');
+            if (regForm) regForm.style.display = '';
+            const regHeader = document.getElementById('regModalHeader');
+            if (regHeader) regHeader.style.display = '';
+            const regPayment = document.getElementById('regModalPayment');
+            if (regPayment) regPayment.style.display = '';
+        }
+
+        function showRegistrationSuccessCard(member) {
+            const modal = document.getElementById('registrationModal');
+            const modalInner = modal ? modal.querySelector('div') : null;
+            if (!modalInner) return;
+
+            // Hide the form and header sections, show success card instead
+            const regForm = document.getElementById('publicRegistrationForm');
+            if (regForm) regForm.style.display = 'none';
+            const regHeader = document.getElementById('regModalHeader');
+            if (regHeader) regHeader.style.display = 'none';
+            const regPayment = document.getElementById('regModalPayment');
+            if (regPayment) regPayment.style.display = 'none';
+
+            // Remove any existing success card
+            const existingCard = document.getElementById('regSuccessCard');
+            if (existingCard) existingCard.remove();
+
+            const photoHtml = member.photoBase64
+                ? `<img src="${member.photoBase64}" alt="Your Photo" style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid var(--secondary);margin-bottom:12px;display:block;margin-left:auto;margin-right:auto;">`
+                : `<div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-light));display:flex;align-items:center;justify-content:center;margin:0 auto 12px;border:3px solid var(--secondary);"><i class="fas fa-user-md" style="font-size:36px;color:white;"></i></div>`;
+
+            const card = document.createElement('div');
+            card.id = 'regSuccessCard';
+            card.innerHTML = `
+                <div style="text-align:center;padding:10px 0 20px;">
+                    <!-- Success tick animation -->
+                    <div style="width:70px;height:70px;border-radius:50%;background:#ecfdf5;border:3px solid #10b981;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;animation:successPop 0.4s ease;">
+                        <i class="fas fa-check" style="font-size:30px;color:#10b981;"></i>
+                    </div>
+                    <h2 style="color:var(--primary);font-family:'Playfair Display',serif;font-size:24px;margin-bottom:4px;">Registration Successful!</h2>
+                    <p style="color:#64748b;font-size:14px;margin-bottom:20px;">Welcome to the AYUSH Federation of India, Belagavi Taluka</p>
+
+                    <!-- Member Detail Card -->
+                    <div style="background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:16px;padding:24px;margin-bottom:20px;text-align:left;box-shadow:0 8px 30px rgba(0,34,68,0.2);">
+                        <!-- Photo + Name Header -->
+                        <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.15);">
+                            ${photoHtml.replace('display:block;margin-left:auto;margin-right:auto;', '')}
+                            <div>
+                                <div style="font-size:11px;color:var(--secondary);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">AFI Member</div>
+                                <div style="font-size:20px;font-weight:700;color:#ffffff;font-family:'Playfair Display',serif;">${escapeHtml(member.name)}</div>
+                                <div style="font-size:13px;color:#cbd5e1;margin-top:3px;">${escapeHtml(member.qualification)}</div>
+                            </div>
+                        </div>
+
+                        <!-- Detail Rows -->
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                            <div style="background:rgba(255,255,255,0.08);padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);">
+                                <div style="font-size:11px;color:var(--secondary);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;"><i class="fas fa-id-badge" style="margin-right:5px;"></i>Reg No</div>
+                                <div style="font-size:14px;color:#ffffff;font-weight:600;font-family:monospace;">${escapeHtml(member.regno)}</div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.08);padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);">
+                                <div style="font-size:11px;color:var(--secondary);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;"><i class="fas fa-phone-alt" style="margin-right:5px;"></i>Mobile</div>
+                                <div style="font-size:14px;color:#ffffff;font-weight:600;">${escapeHtml(member.mobile)}</div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.08);padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);grid-column:1/-1;">
+                                <div style="font-size:11px;color:var(--secondary);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;"><i class="fas fa-clinic-medical" style="margin-right:5px;"></i>Clinic Address</div>
+                                <div style="font-size:13px;color:#e2e8f0;">${escapeHtml(member.address || 'Not provided')}</div>
+                            </div>
+                            ${member.transaction ? `
+                            <div style="background:rgba(255,255,255,0.08);padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);grid-column:1/-1;">
+                                <div style="font-size:11px;color:var(--secondary);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;"><i class="fas fa-receipt" style="margin-right:5px;"></i>Payment Reference</div>
+                                <div style="font-size:13px;color:#e2e8f0;font-family:monospace;">${escapeHtml(member.transaction)}</div>
+                            </div>` : ''}
+                            <div style="background:rgba(255,255,255,0.08);padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);">
+                                <div style="font-size:11px;color:var(--secondary);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;"><i class="fas fa-circle" style="margin-right:5px;font-size:9px;"></i>Status</div>
+                                <div style="font-size:13px;color:#fde047;font-weight:700;">⏳ Pending Approval</div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.08);padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);">
+                                <div style="font-size:11px;color:var(--secondary);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;"><i class="fas fa-calendar-alt" style="margin-right:5px;"></i>Registered On</div>
+                                <div style="font-size:13px;color:#e2e8f0;">${formatDate(member.createdAt)}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Screenshot tip -->
+                    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;text-align:left;">
+                        <i class="fas fa-lightbulb" style="color:#f59e0b;font-size:20px;flex-shrink:0;"></i>
+                        <p style="font-size:13px;color:#92400e;margin:0;line-height:1.5;">
+                            <strong>Save your details!</strong> Take a screenshot of this card for your records. Your membership will be activated once the admin verifies your registration.
+                        </p>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+                        <button class="btn btn-primary" onclick="navigateTo('members');closeRegistration();" style="flex:1;min-width:140px;">
+                            <i class="fas fa-users"></i> View Members
+                        </button>
+                        <button class="btn btn-success" onclick="closeRegistration();" style="flex:1;min-width:140px;">
+                            <i class="fas fa-check-circle"></i> Done
+                        </button>
+                    </div>
+                </div>
+                <style>
+                    @keyframes successPop {
+                        0% { transform: scale(0.5); opacity: 0; }
+                        70% { transform: scale(1.1); }
+                        100% { transform: scale(1); opacity: 1; }
+                    }
+                </style>
+            `;
+
+            modalInner.appendChild(card);
+            // Scroll to top of modal so success card is visible
+            modalInner.scrollTop = 0;
         }
 
         // ADMIN PANEL & AUTHENTICATION
@@ -5777,6 +5888,7 @@ function doGet(e) {
             downloadCmeIcs,
             openRegistration,
             closeRegistration,
+            showRegistrationSuccessCard,
             openAdmin,
             closeAdmin,
             adminLogin,
