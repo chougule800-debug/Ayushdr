@@ -1,0 +1,48 @@
+<script type="module">
+    // Import Firebase SDK
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, set, get, child, push, remove, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyChBU766-JPIMUX_7jZPLpVb7QoZCBwpXg",
+        authDomain: "afi-544dd.firebaseapp.com",
+        databaseURL: "https://afi-544dd-default-rtdb.firebaseio.com",
+        projectId: "afi-544dd",
+        storageBucket: "afi-544dd.firebasestorage.app",
+        messagingSenderId: "94350085004",
+        appId: "1:94350085004:web:0d2fd8c497071eadf8e4a9",
+        measurementId: "G-LJMSV8EGWQ"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Expose DB functions to global scope for inline handlers
+    window.__firebaseDB = db;
+    window.__firebaseRef = ref;
+    window.__firebaseSet = set;
+    window.__firebaseGet = get;
+    window.__firebasePush = push;
+    window.__firebaseRemove = remove;
+    window.__firebaseChild = child;
+    window.__firebaseOnValue = onValue;
+
+    console.log("🔥 Firebase initialized successfully");
+    console.log("✅ Connected to database:", firebaseConfig.databaseURL);
+
+    // Test connection - write a test entry
+    try {
+        const testRef = ref(db, 'afi/connection_test');
+        set(testRef, {
+            timestamp: new Date().toISOString(),
+            status: 'connected'
+        }).then(() => {
+            console.log("✅ Firebase write test successful");
+        }).catch((error) => {
+            console.warn("⚠️ Firebase write test failed:", error);
+        });
+    } catch (error) {
+        console.warn("⚠️ Firebase connection error:", error);
+    }
+</script>

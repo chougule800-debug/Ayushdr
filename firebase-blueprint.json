@@ -1,0 +1,183 @@
+{
+  "entities": {
+    "Member": {
+      "title": "Member",
+      "description": "Registered AYUSH doctor member in AFI Belagavi Taluka",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier of member record"
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name of the registered doctor",
+          "maxLength": 150
+        },
+        "mobile": {
+          "type": "string",
+          "description": "10-digit contact mobile number",
+          "pattern": "^[0-9]{10}$"
+        },
+        "qualification": {
+          "type": "string",
+          "description": "Medical qualification (e.g. BAMS, BHMS, BUMS)",
+          "maxLength": 100
+        },
+        "regno": {
+          "type": "string",
+          "description": "State/National Council Registration Number",
+          "maxLength": 60
+        },
+        "address": {
+          "type": "string",
+          "description": "Clinic or residential address",
+          "maxLength": 500
+        },
+        "transaction": {
+          "type": "string",
+          "description": "Payment reference or transaction number",
+          "maxLength": 100
+        },
+        "photoBase64": {
+          "type": "string",
+          "description": "Base64 encoded profile photo",
+          "maxLength": 500000
+        },
+        "status": {
+          "type": "string",
+          "description": "Membership approval status",
+          "enum": ["active", "pending", "inactive"]
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of registration"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "ISO timestamp of last update"
+        }
+      },
+      "required": ["name", "mobile", "qualification", "regno", "address", "createdAt"]
+    },
+    "Announcement": {
+      "title": "Announcement",
+      "description": "Association circular, notice, or public announcement",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique announcement identifier"
+        },
+        "title": {
+          "type": "string",
+          "description": "Announcement headline",
+          "maxLength": 250
+        },
+        "content": {
+          "type": "string",
+          "description": "Full body text of the announcement",
+          "maxLength": 5000
+        },
+        "category": {
+          "type": "string",
+          "description": "Notice category (General, Meeting, Event, Urgent)",
+          "maxLength": 50
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of notice publication"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "ISO timestamp of last notice edit"
+        }
+      },
+      "required": ["title", "content", "createdAt"]
+    },
+    "CmeProgram": {
+      "title": "CME Program",
+      "description": "Continuing Medical Education program, seminar, or workshop",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique CME program identifier"
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the educational program",
+          "maxLength": 250
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed syllabus or description of the CME event",
+          "maxLength": 5000
+        },
+        "date": {
+          "type": "string",
+          "description": "Scheduled date of the event (YYYY-MM-DD)",
+          "maxLength": 30
+        },
+        "venue": {
+          "type": "string",
+          "description": "Location venue for the CME",
+          "maxLength": 250
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of CME entry"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "ISO timestamp of last update"
+        }
+      },
+      "required": ["title", "description", "date", "createdAt"]
+    },
+    "GalleryItem": {
+      "title": "Gallery Item",
+      "description": "Event, medical camp, or celebration photo asset",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique gallery asset identifier"
+        },
+        "title": {
+          "type": "string",
+          "description": "Photo caption or album title",
+          "maxLength": 250
+        },
+        "imageBase64": {
+          "type": "string",
+          "description": "Base64 image stream or asset URL",
+          "maxLength": 1000000
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of image upload"
+        }
+      },
+      "required": ["title", "imageBase64", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/members/{memberId}": {
+      "schema": "Member",
+      "description": "Registered doctors and member directory"
+    },
+    "/announcements/{announcementId}": {
+      "schema": "Announcement",
+      "description": "Official AFI Belagavi announcements"
+    },
+    "/cme/{cmeId}": {
+      "schema": "CmeProgram",
+      "description": "CME workshops and medical education schedules"
+    },
+    "/gallery/{galleryId}": {
+      "schema": "GalleryItem",
+      "description": "Medical camps and event photos"
+    }
+  }
+}

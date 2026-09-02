@@ -1,0 +1,84 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default Deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidMember(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() <= 150 &&
+        data.mobile is string && data.mobile.size() >= 10 && data.mobile.size() <= 15 &&
+        data.qualification is string && data.qualification.size() > 0 && data.qualification.size() <= 100 &&
+        data.regno is string && data.regno.size() > 0 && data.regno.size() <= 60 &&
+        (!('address' in data) || (data.address is string && data.address.size() <= 500)) &&
+        (!('transaction' in data) || data.transaction == null || (data.transaction is string && data.transaction.size() <= 100)) &&
+        (!('photoBase64' in data) || data.photoBase64 == null || (data.photoBase64 is string && data.photoBase64.size() <= 1500000)) &&
+        (!('status' in data) || (data.status in ['active', 'pending', 'inactive'])) &&
+        (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 60)) &&
+        data.createdAt is string && data.createdAt.size() <= 50;
+    }
+
+    function isValidAnnouncement(data) {
+      return data.title is string && data.title.size() > 0 && data.title.size() <= 250 &&
+        data.content is string && data.content.size() > 0 && data.content.size() <= 5000 &&
+        (!('category' in data) || (data.category is string && data.category.size() <= 50)) &&
+        data.createdAt is string && data.createdAt.size() <= 50;
+    }
+
+    function isValidCme(data) {
+      return data.title is string && data.title.size() > 0 && data.title.size() <= 250 &&
+        data.description is string && data.description.size() > 0 && data.description.size() <= 5000 &&
+        data.date is string && data.date.size() > 0 && data.date.size() <= 30 &&
+        (!('venue' in data) || (data.venue is string && data.venue.size() <= 250)) &&
+        data.createdAt is string && data.createdAt.size() <= 50;
+    }
+
+    function isValidGallery(data) {
+      return data.title is string && data.title.size() > 0 && data.title.size() <= 250 &&
+        data.imageBase64 is string && data.imageBase64.size() > 0 && data.imageBase64.size() <= 1000000 &&
+        data.createdAt is string && data.createdAt.size() <= 50;
+    }
+
+    // Members collection
+    match /members/{memberId} {
+      allow read: if true;
+      allow create: if isValidId(memberId) && isValidMember(request.resource.data);
+      allow update: if isValidId(memberId) && isValidMember(request.resource.data);
+      allow delete: if isValidId(memberId);
+    }
+
+    // Announcements collection
+    match /announcements/{announcementId} {
+      allow read: if true;
+      allow create: if isValidId(announcementId) && isValidAnnouncement(request.resource.data);
+      allow update: if isValidId(announcementId) && isValidAnnouncement(request.resource.data);
+      allow delete: if isValidId(announcementId);
+    }
+
+    // CME collection
+    match /cme/{cmeId} {
+      allow read: if true;
+      allow create: if isValidId(cmeId) && isValidCme(request.resource.data);
+      allow update: if isValidId(cmeId) && isValidCme(request.resource.data);
+      allow delete: if isValidId(cmeId);
+    }
+
+    // Gallery collection
+    match /gallery/{galleryId} {
+      allow read: if true;
+      allow create: if isValidId(galleryId) && isValidGallery(request.resource.data);
+      allow update: if isValidId(galleryId) && isValidGallery(request.resource.data);
+      allow delete: if isValidId(galleryId);
+    }
+
+    // Test connection doc
+    match /test/{docId} {
+      allow read: if true;
+    }
+  }
+}

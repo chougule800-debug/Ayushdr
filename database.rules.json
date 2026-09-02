@@ -1,0 +1,97 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "afi": {
+      "members": {
+        ".read": true,
+        ".write": "auth != null",
+        "$memberId": {
+          ".write": "auth != null || (!data.exists() && newData.child('status').val() === 'pending')",
+          ".validate": "newData.hasChildren(['name','mobile','qualification','regNo'])",
+          "name":          { ".validate": "newData.isString() && newData.val().length > 1 && newData.val().length <= 100" },
+          "mobile":        { ".validate": "newData.isString() && newData.val().matches(/^[6-9][0-9]{9}$/)" },
+          "qualification": { ".validate": "newData.isString() && newData.val().length <= 100" },
+          "regNo":         { ".validate": "newData.isString() && newData.val().length <= 50" },
+          "address":       { ".validate": "newData.isString() && newData.val().length <= 300" },
+          "txn":           { ".validate": "newData.isString() && newData.val().length <= 100" },
+          "status":        { ".validate": "newData.isString() && newData.val().matches(/^(active|pending|inactive)$/)" },
+          "date":          { ".validate": "newData.isString()" },
+          "photo":         { ".validate": "auth != null && newData.isString()" },
+          "$other":        { ".validate": false }
+        }
+      },
+
+      "announcements": {
+        ".read": true,
+        ".write": "auth != null",
+        "$id": {
+          ".validate": "newData.hasChildren(['title','content'])",
+          "title":    { ".validate": "newData.isString() && newData.val().length <= 200" },
+          "content":  { ".validate": "newData.isString() && newData.val().length <= 5000" },
+          "category": { ".validate": "newData.isString() && newData.val().matches(/^(General|Meeting|Event|Urgent)$/)" },
+          "date":     { ".validate": "newData.isString()" },
+          "$other":   { ".validate": false }
+        }
+      },
+
+      "cme": {
+        ".read": true,
+        ".write": "auth != null",
+        "$id": {
+          ".validate": "newData.hasChildren(['title'])",
+          "title":        { ".validate": "newData.isString() && newData.val().length <= 200" },
+          "description":  { ".validate": "newData.isString() && newData.val().length <= 5000" },
+          "date":         { ".validate": "newData.isString()" },
+          "venue":        { ".validate": "newData.isString() && newData.val().length <= 300" },
+          "registration": { ".validate": "newData.isString() && newData.val().length <= 300" },
+          "$other":       { ".validate": false }
+        }
+      },
+
+      "gallery": {
+        ".read": true,
+        ".write": "auth != null",
+        "$id": {
+          "title":   { ".validate": "newData.isString() && newData.val().length <= 200" },
+          "caption": { ".validate": "newData.isString() && newData.val().length <= 500" },
+          "url":     { ".validate": "newData.isString() && newData.val().length <= 4000000" },
+          "date":    { ".validate": "newData.isString()" },
+          "$other":  { ".validate": false }
+        }
+      },
+
+      "boardMembers": {
+        ".read": true,
+        ".write": "auth != null",
+        "$id": {
+          ".validate": "newData.hasChildren(['designation','name'])",
+          "designation": { ".validate": "newData.isString() && newData.val().length <= 100" },
+          "name":        { ".validate": "newData.isString() && newData.val().length <= 100" },
+          "phone":       { ".validate": "newData.isString() && newData.val().length <= 20" },
+          "photo":       { ".validate": "newData.isString()" },
+          "$other":      { ".validate": false }
+        }
+      },
+
+      "settings": {
+        ".read": true,
+        ".write": "auth != null",
+        "upi":       { ".validate": "newData.isString() && newData.val().length <= 100" },
+        "fee":       { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "adminCode": { ".validate": "newData.isString() && newData.val().length <= 50" },
+        "$other":    { ".validate": false }
+      },
+
+      "adminProfile": {
+        ".read": "auth != null",
+        ".write": "auth != null",
+        "name":   { ".validate": "newData.isString() && newData.val().length <= 100" },
+        "email":  { ".validate": "newData.isString() && newData.val().length <= 200" },
+        "photo":  { ".validate": "newData.isString() && newData.val().length <= 1000000" },
+        "$other": { ".validate": false }
+      }
+    }
+  }
+}
